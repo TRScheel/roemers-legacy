@@ -3,7 +3,7 @@ using System;
 
 public partial class GameTimeManager : Node
 {
-    public static GameTimeManager Instance { get; private set; }
+    public static GameTimeManager Instance { get; private set; } = null!;
 
     private DateTimeOffset startTime;
     private DateTimeOffset currentTime;
@@ -11,7 +11,7 @@ public partial class GameTimeManager : Node
 
     public override void _Ready()
     {
-        if (Instance == null)
+        if (Instance is null)
         {
             Instance = this;
             startTime = DateTimeOffset.UtcNow;

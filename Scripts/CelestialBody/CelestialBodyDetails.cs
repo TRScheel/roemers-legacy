@@ -43,31 +43,31 @@ namespace RoemersLegacy.Scripts.CelestialBody
         /// Semimajor Axis of the body in kilometers.
         /// </summary>
         [JsonPropertyName("semimajorAxis")]
-        public int SemimajorAxis { get; set; }
+        public double SemimajorAxis { get; set; }
 
         /// <summary>
         /// Perihelion in kilometers.
         /// </summary>
         [JsonPropertyName("perihelion")]
-        public int Perihelion { get; set; }
+        public double Perihelion { get; set; }
 
         /// <summary>
         /// Aphelion in kilometers.
         /// </summary>
         [JsonPropertyName("aphelion")]
-        public int Aphelion { get; set; }
+        public double Aphelion { get; set; }
 
         /// <summary>
         /// Orbital eccentricity.
         /// </summary>
         [JsonPropertyName("eccentricity")]
-        public decimal Eccentricity { get; set; }
+        public double Eccentricity { get; set; }
 
         /// <summary>
         /// Orbital inclination in degrees.
         /// </summary>
         [JsonPropertyName("inclination")]
-        public decimal Inclination { get; set; }
+        public double Inclination { get; set; }
 
         /// <summary>
         /// Body mass in 10^n kg.
@@ -87,43 +87,43 @@ namespace RoemersLegacy.Scripts.CelestialBody
         /// Body density in g/cm^3.
         /// </summary>
         [JsonPropertyName("density")]
-        public decimal Density { get; set; }
+        public double Density { get; set; }
 
         /// <summary>
         /// Surface gravity in m/s^2.
         /// </summary>
         [JsonPropertyName("gravity")]
-        public decimal Gravity { get; set; }
+        public double Gravity { get; set; }
 
         /// <summary>
         /// Escape speed in m/s.
         /// </summary>
         [JsonPropertyName("escape")]
-        public decimal EscapeVelocity { get; set; }
+        public double EscapeVelocity { get; set; }
 
         /// <summary>
         /// Mean radius in kilometers.
         /// </summary>
         [JsonPropertyName("meanRadius")]
-        public int MeanRadius { get; set; }
+        public double MeanRadius { get; set; }
 
         /// <summary>
         /// Equatorial radius in kilometers.
         /// </summary>
         [JsonPropertyName("equaRadius")]
-        public int EquatorialRadius { get; set; }
+        public double EquatorialRadius { get; set; }
 
         /// <summary>
         /// Polar radius in kilometers.
         /// </summary>
         [JsonPropertyName("polarRadius")]
-        public int PolarRadius { get; set; }
+        public double PolarRadius { get; set; }
 
         /// <summary>
         /// Flattening.
         /// </summary>
         [JsonPropertyName("flattening")]
-        public decimal Flattening { get; set; }
+        public double Flattening { get; set; }
 
         /// <summary>
         /// Body dimension on the 3 axes X, Y, and Z for non-spherical bodies.
@@ -135,13 +135,13 @@ namespace RoemersLegacy.Scripts.CelestialBody
         /// Sideral orbital time for body around another one (the Sun or a planet) in Earth days.
         /// </summary>
         [JsonPropertyName("sideralOrbit")]
-        public decimal SideralOrbit { get; set; }
+        public double SideralOrbit { get; set; }
 
         /// <summary>
         /// Sideral rotation, necessary time to turn around itself, in hours.
         /// </summary>
         [JsonPropertyName("sideralRotation")]
-        public decimal SideralRotation { get; set; }
+        public double SideralRotation { get; set; }
 
         /// <summary>
         /// For a moon, the planet around which it is orbiting.
@@ -172,31 +172,31 @@ namespace RoemersLegacy.Scripts.CelestialBody
         /// Axial tilt.
         /// </summary>
         [JsonPropertyName("axialTilt")]
-        public decimal? AxialTilt { get; set; }
+        public double? AxialTilt { get; set; }
 
         /// <summary>
         /// Mean temperature in Kelvin.
         /// </summary>
         [JsonPropertyName("avgTemp")]
-        public int AverageTemperature { get; set; }
+        public double AverageTemperature { get; set; }
 
         /// <summary>
         /// Mean anomaly in degrees.
         /// </summary>
         [JsonPropertyName("mainAnomaly")]
-        public decimal MainAnomaly { get; set; }
+        public double MainAnomaly { get; set; }
 
         /// <summary>
         /// Argument of perihelion in degrees.
         /// </summary>
         [JsonPropertyName("argPeriapsis")]
-        public decimal ArgumentOfPeriapsis { get; set; }
+        public double ArgumentOfPeriapsis { get; set; }
 
         /// <summary>
-        /// Longitude of ascending node in degrees.
+        /// doubleitude of ascending node in degrees.
         /// </summary>
-        [JsonPropertyName("longAscNode")]
-        public decimal LongitudeOfAscendingNode { get; set; }
+        [JsonPropertyName("doubleAscNode")]
+        public double doubleitudeOfAscendingNode { get; set; }
 
         /// <summary>
         /// The body type: Star, Planet, Dwarf Planet, Asteroid, Comet, or Moon.
@@ -216,13 +216,13 @@ namespace RoemersLegacy.Scripts.CelestialBody
             /// Body mass.
             /// </summary>
             [JsonPropertyName("massValue")]
-            public decimal MassValue { get; set; }
+            public double MassValue { get; set; }
 
             /// <summary>
             /// Exponent of the mass.
             /// </summary>
             [JsonPropertyName("massExponent")]
-            public int MassExponent { get; set; }
+            public double MassExponent { get; set; }
         }
 
         public record VolumeDetails
@@ -231,13 +231,13 @@ namespace RoemersLegacy.Scripts.CelestialBody
             /// Body volume.
             /// </summary>
             [JsonPropertyName("volValue")]
-            public decimal VolumeValue { get; set; }
+            public double VolumeValue { get; set; }
 
             /// <summary>
             /// Exponent of the volume.
             /// </summary>
             [JsonPropertyName("volExponent")]
-            public int VolumeExponent { get; set; }
+            public double VolumeExponent { get; set; }
         }
 
         public record AroundPlanetDetails

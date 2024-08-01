@@ -1,3 +1,10 @@
-[gd_scene format=3 uid="uid://cg0uxp1tr0rn"]
+[gd_scene load_steps=2 format=3 uid="uid://cg0uxp1tr0rn"]
+
+[ext_resource type="Script" path="res://Scripts/CelestialBody/SolarSystem.cs" id="1_mfopn"]
 
 [node name="SolarSystem" type="Node3D"]
+script = ExtResource("1_mfopn")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 200)
+fov = 90.0
