@@ -1,0 +1,12 @@
+<Project>
+    <PropertyGroup>
+        <Nullable>enable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+        <RunAnalyzersDuringLiveAnalysis>true</RunAnalyzersDuringLiveAnalysis>
+        <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+        <NoWarn>$(NoWarn);1591</NoWarn>
+        <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
+    </PropertyGroup>
+</Project>
+  

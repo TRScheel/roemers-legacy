@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://bbxgjbklw3og5"]
+
+[ext_resource type="Script" path="res://Scripts/CelestialBody/CelestialBody.cs" id="1_hs1hh"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_i7qs5"]
+
+[node name="CelestialBody" type="MeshInstance3D"]
+mesh = SubResource("SphereMesh_i7qs5")
+script = ExtResource("1_hs1hh")
