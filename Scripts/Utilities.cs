@@ -17,7 +17,7 @@ namespace RoemersLegacy.Scripts
 
         public static float ScaleDistance(double axis)
         {
-            return ScalePower(axis, 0.4);
+            return ScalePower(axis, 0.42);
         }
     }
 }

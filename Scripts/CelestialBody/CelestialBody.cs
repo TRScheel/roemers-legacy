@@ -38,6 +38,28 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			}
 		}
 
+		private Area3D? _celestialBodyArea3D;
+		public Area3D CelestialBodyArea3D
+		{
+			get
+			{
+				_celestialBodyArea3D ??= (Area3D)CelestialBodyMesh.GetNode("CelestialBodyArea3D");
+
+				return _celestialBodyArea3D;
+			}
+		}
+
+		private CollisionShape3D? _celestialBodyCollisionShape3D;
+		public CollisionShape3D CelestialBodyCollisionShape3D
+		{
+			get
+			{
+				_celestialBodyCollisionShape3D ??= (CollisionShape3D)CelestialBodyArea3D.GetNode("CelestialBodyCollisionShape3D");
+
+				return _celestialBodyCollisionShape3D;
+			}
+		}
+
 		private OrbitPath? _orbitPath;
 		public OrbitPath OrbitPath
 		{
@@ -54,6 +76,12 @@ namespace RoemersLegacy.Scripts.CelestialBody
 		public override void _Ready()
 		{
 			SetupSun();
+		}
+
+		public void OnInput(Node camera, InputEvent @event, Vector3 position, Vector3 normal, long shape_idx)
+		{
+			// Replace with function body.
+			GD.Print(Details.Id);
 		}
 
 		public override void _PhysicsProcess(double delta)
@@ -269,6 +297,8 @@ namespace RoemersLegacy.Scripts.CelestialBody
 				RadialSegments = 128,
 				Rings = 128
 			};
+
+			CelestialBodyCollisionShape3D.Shape = new SphereShape3D { Radius = sphere.Radius };
 
 			StandardMaterial3D material = new StandardMaterial3D
 			{
