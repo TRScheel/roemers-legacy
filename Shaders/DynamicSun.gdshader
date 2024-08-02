@@ -97,36 +97,15 @@ void fragment() {
     float time4 = cos(TIME * time_speed * 4.0);
     vec2 uv1 = uv + vec2(-time1, time3);
     vec2 uv2 = uv + vec2(time4, -time2);
-    vec2 uv3 = uv + vec2(time2 + 0.25, time1 + 0.25);
-    vec2 uv4 = uv + vec2(-time3 + 0.25, -time2 + 0.25);
+    vec2 uv3 = uv + vec2(time2 + 0.125, time1 + 0.125);
+    vec2 uv4 = uv + vec2(-time3 + 0.125, -time2 + 0.125);
 
-    // Create layered turbulence effect
-    // float turbulence1 = fract(fbm(uv, time));
-    // float turbulence2 = fract(fbm(uv, time2));
-    // float worley = worley(UV, 3.0, 5.0);
-    // float turbulence2 = fbm(uv, time * 0.5);
+    float fbmresult1 = (fbm(uv1, 0.0) + seamless_noise(uv2 * 3.0, period));
+    float fbmresult2 = (fbm(uv2, 3.0) + seamless_noise(uv3 * 3.0, vec2(period.y, period.x)));
+    vec3 color = texture(sun_texture, vec2(fbmresult1, fbmresult2)).rgb;
+    color.r *= red_boost;
 
-    // vec3 color1 = texture(sun_texture, uv).rgb;
-
-    // vec2 uv_offset = uv;
-    // uv_offset += vec2(turbulence1 + turbulence2);
-    // vec3 color2 = texture(sun_texture, uv_offset).rgb;
-
-    // vec3 color1 = vec3(1.0, 0.0, 0.0);    
-    // vec3 color2 = vec3(0.0, 1.0, 0.0);
-    // vec3 color = mix(mix(color1, color2, turbulence1), color1, turbulence2);
-
-    // vec3 color = texture(sun_texture, uv).rgb;
-    float fbmresult1 = (fbm(uv1, 0.0) + seamless_noise(uv2, period)) * red_boost;
-    vec3 color1 = fract(vec3(fbmresult1, fbmresult1, fbmresult1));
-    float fbmresult2 = (fbm(uv2, 3.0) + seamless_noise(uv3 * 3.0, vec2(period.y, period.x))) * red_boost;
-    vec3 color2 = fract(vec3(fbmresult2, fbmresult2, fbmresult2));
-    float fbmresult3 = (fbm(uv, 0.0) + seamless_noise(uv, period)) * red_boost;
-    vec3 color3 = fract(vec3(fbmresult3, fbmresult3, fbmresult3));
-    vec3 color4 = texture(sun_texture, UV).rgb;
-
-    vec3 color = mix(color4, (color1 + color2 + color3) / 3.0, 0.25);
     // Apply color modulation
     ALBEDO = color;
-    //EMISSION = color;
+    EMISSION = color;
 }

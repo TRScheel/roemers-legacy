@@ -59,8 +59,8 @@ namespace RoemersLegacy.Scripts.CelestialBody
 		public override void _PhysicsProcess(double delta)
 		{
 			// Update the position and rotation of the celestial body
-			//CelestialBodyMesh.Position = CalculatePosition();
-			//CelestialBodyMesh.Transform = UpdateRotation();
+			CelestialBodyMesh.Position = CalculatePosition();
+			CelestialBodyMesh.Transform = UpdateRotation();
 
 			//TestShaderVariables();
 		}
@@ -75,12 +75,12 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			bool shaderVariableChanged = false;
 			if (Input.IsActionJustReleased("camera_rotate_ccw"))
 			{
-				TimeSpeed += 0.01f;
+				TimeSpeed += 0.001f;
 				shaderVariableChanged = true;
 			}
 			else if (Input.IsActionJustReleased("camera_pan_left"))
 			{
-				TimeSpeed -= 0.01f;
+				TimeSpeed -= 0.001f;
 				shaderVariableChanged = true;
 			}
 
@@ -169,7 +169,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			_shaderMaterial.SetShaderParameter("noise_strength", NoiseStrength);
 			_shaderMaterial.SetShaderParameter("cell_amount", CellAmount);
 			_shaderMaterial.SetShaderParameter("period", Period);
-			GD.Print($"TimeSpeed: {TimeSpeed:F1}\tUVScale: {UVScale:F1}\tRedBoost: {RedBoost:F1}\tNoiseStrength: {NoiseStrength:F1}\tCellAmount: {CellAmount}\tPeriod: {Period}");
+			GD.Print($"TimeSpeed: {TimeSpeed:F3}\tUVScale: {UVScale:F1}\tRedBoost: {RedBoost:F1}\tNoiseStrength: {NoiseStrength:F1}\tCellAmount: {CellAmount}\tPeriod: {Period}");
 		}
 
 
@@ -206,8 +206,8 @@ namespace RoemersLegacy.Scripts.CelestialBody
 		}
 
 		private ShaderMaterial? _shaderMaterial;
-		private float TimeSpeed = 0.01f;
-		private float UVScale = 2.3f;
+		private float TimeSpeed = 0.002f;
+		private float UVScale = 0.7f;
 		private float RedBoost = 1f;
 		private float NoiseStrength = 1.4f;
 		private int CellAmount = 25;
@@ -239,7 +239,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
 				Radius = SphereMesh.Radius * 1.007f, // Slightly larger than the sun
 				Height = SphereMesh.Height * 1.007f,
 			};
-			//CelestialBodyMesh.AddChild(coronaMesh);
+			CelestialBodyMesh.AddChild(coronaMesh);
 			// Create the shader material for the corona
 			var coronaShaderMaterial = new ShaderMaterial();
 			coronaShaderMaterial.Shader = ResourceLoader.Load<Shader>("res://Shaders/Corona.gdshader");
