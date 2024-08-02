@@ -25,7 +25,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
 				{
 					var node = celestialBodyScene.Instantiate<CelestialBody>();
 					node.Details = new CelestialBodyDetails(body);
-					return node;
+					return node; 
 				})
 				.OrderByDescending(body => body.Details.Mass?.MassValue)
 				.OrderByDescending(body => body.Details.Mass?.MassExponent);

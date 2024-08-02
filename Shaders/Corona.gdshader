@@ -1,10 +1,10 @@
 shader_type spatial;
-render_mode unshaded, depth_draw_never, cull_disabled, blend_add;
+render_mode unshaded, depth_draw_never, blend_add;
 
 // Uniforms for tweaking the effect
-uniform float glow_intensity : hint_range(0.0, 5.0) = 0.15;  // Lowered intensity
+uniform float glow_intensity : hint_range(0.0, 5.0) = 0.35;
 uniform float glow_radius : hint_range(0.0, 2.0) = 0.5;
-uniform float time_speed : hint_range(0.0, 10.0) = 0.25;
+uniform float time_speed : hint_range(0.0, 10.0) = 1.0;
 
 // Simple hash function for pseudorandom values
 float hash(vec2 p) {
@@ -34,8 +34,9 @@ float fbm(vec2 p) {
 }
 
 void fragment() {
-    vec2 uv = UV * 2.0 - 1.0; // Convert UV to range -1 to 1
-    float len = length(uv);
+    // Use the UV coordinates directly without shifting to -1 to 1
+    vec2 uv = UV;
+    float len = length(uv - 0.5); // Center the UV range around 0.5 for radial gradient
 
     // Create a radial gradient
     float glow = smoothstep(glow_radius, glow_radius - 0.1, len);
@@ -45,9 +46,9 @@ void fragment() {
     float noise = fbm(uv * 5.0 + vec2(time, time));
 
     // Combine glow and noise
-    glow *= (1.0 + noise * 0.1) * glow_intensity; // Reduced noise impact
+    glow *= (1.0 + noise * 0.1) * glow_intensity;
 
     // Output the color with the glow effect
     ALBEDO = vec3(1.0, 0.7, 0.0) * glow; // Adjust color as needed
-    EMISSION = vec3(1.0, 0.7, 0.0) * glow * 0.15; // Reduced emission multiplier
+    EMISSION = vec3(1.0, 0.7, 0.0) * glow * 0.35; // Reduced emission multiplier
 }

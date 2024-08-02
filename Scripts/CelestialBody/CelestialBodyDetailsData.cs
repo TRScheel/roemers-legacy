@@ -196,7 +196,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
         /// doubleitude of ascending node in degrees.
         /// </summary>
         [JsonPropertyName("doubleAscNode")]
-        public virtual double doubleitudeOfAscendingNode { get; set; }
+        public virtual double DoubleitudeOfAscendingNode { get; set; }
 
         /// <summary>
         /// The body type: Star, Planet, Dwarf Planet, Asteroid, Comet, or Moon.

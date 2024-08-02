@@ -73,7 +73,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			double e = bodyDetails.Eccentricity;  // Eccentricity
 			double i = Mathf.DegToRad((float)bodyDetails.Inclination); // Inclination in radians
 			double omega = Mathf.DegToRad((float)bodyDetails.ArgumentOfPeriapsis); // Argument of periapsis in radians
-			double Omega = Mathf.DegToRad((float)bodyDetails.doubleitudeOfAscendingNode); // Longitude of ascending node in radians
+			double Omega = Mathf.DegToRad((float)bodyDetails.DoubleitudeOfAscendingNode); // Longitude of ascending node in radians
 
 			for (int j = 0; j <= Points; j++)
 			{

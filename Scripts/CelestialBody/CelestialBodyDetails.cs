@@ -47,7 +47,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			base.AverageTemperature = original.AverageTemperature;
 			base.MainAnomaly = original.MainAnomaly;
 			base.ArgumentOfPeriapsis = original.ArgumentOfPeriapsis;
-			base.doubleitudeOfAscendingNode = original.doubleitudeOfAscendingNode;
+			base.DoubleitudeOfAscendingNode = original.DoubleitudeOfAscendingNode;
 			base.BodyType = original.BodyType;
 			base.Relation = original.Relation;
 
@@ -109,14 +109,14 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			}
 		}
 
-		public override double doubleitudeOfAscendingNode
+		public override double DoubleitudeOfAscendingNode
 		{
-			get => base.doubleitudeOfAscendingNode;
+			get => base.DoubleitudeOfAscendingNode;
 			set
 			{
-				if (base.doubleitudeOfAscendingNode != value)
+				if (base.DoubleitudeOfAscendingNode != value)
 				{
-					base.doubleitudeOfAscendingNode = value;
+					base.DoubleitudeOfAscendingNode = value;
 					InvalidateCache();
 				}
 			}
@@ -179,8 +179,13 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			double timeSincePeriapsis = (M0 / (2 * Math.PI)) * T;
 
 			// Calculate the epoch of periapsis passage
-			DateTimeOffset periapsisEpoch = currentTime - TimeSpan.FromDays(timeSincePeriapsis);
+			var days = TimeSpan.FromDays(timeSincePeriapsis);
+			DateTimeOffset periapsisEpoch = currentTime - days;
 
+			// if (IsPlanet || Id == "sun")
+			// {
+			// 	GD.Print($"{Id} -  M0: {M0:F2}, T: {T:F2}, timeSincePeriapsis: {timeSincePeriapsis:F2}, days: {days.TotalDays:F2}, periapsisEpoch: {periapsisEpoch}");
+			// }
 			return periapsisEpoch;
 		}
 

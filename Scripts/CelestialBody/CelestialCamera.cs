@@ -56,7 +56,11 @@ public partial class CelestialCamera : Node3D
 	{
 		// retrieve inputs for camera_pan_up/down/left/right, camera_pitch_up/down, 
 		// camera_zoom_in/out, camera_roll_cw/ccw, and camera_yaw_left/right
+		//UpdateCameraPosition(delta);
+	}
 
+	private void UpdateCameraPosition(double delta)
+	{
 		var cameraMovement = new Vector3();
 		var cameraRotation = new Vector3();
 
@@ -78,13 +82,13 @@ public partial class CelestialCamera : Node3D
 			cameraMovement.X += 1;
 		}
 
-		if (InputHelper.IsActionPressedOrHeld("camera_zoom_in"))
-		{
-			cameraMovement.Z += 1;
-		}
-		else if (InputHelper.IsActionPressedOrHeld("camera_zoom_out"))
+		if (InputHelper.IsActionPressedOrHeld("camera_zoom_in") || InputHelper.IsActionPressedOrHeld("camera_pan_in"))
 		{
 			cameraMovement.Z -= 1;
+		}
+		else if (InputHelper.IsActionPressedOrHeld("camera_zoom_out") || InputHelper.IsActionPressedOrHeld("camera_pan_out"))
+		{
+			cameraMovement.Z += 1;
 		}
 
 		if (InputHelper.IsActionPressedOrHeld("camera_pitch_up"))
@@ -98,20 +102,20 @@ public partial class CelestialCamera : Node3D
 
 		if (InputHelper.IsActionPressedOrHeld("camera_rotate_cw"))
 		{
-			cameraRotation.Y -= 1;
+			cameraRotation.Z -= 1;
 		}
 		else if (InputHelper.IsActionPressedOrHeld("camera_rotate_ccw"))
 		{
-			cameraRotation.Y += 1;
+			cameraRotation.Z += 1;
 		}
 
 		if (InputHelper.IsActionPressedOrHeld("camera_yaw_left"))
 		{
-			cameraRotation.Z -= 1;
+			cameraRotation.Y -= 1;
 		}
 		else if (InputHelper.IsActionPressedOrHeld("camera_yaw_right"))
 		{
-			cameraRotation.Z += 1;
+			cameraRotation.Y += 1;
 		}
 
 		if (Input.IsActionJustReleased("camera_speed_scale_increase"))
@@ -145,19 +149,27 @@ public partial class CelestialCamera : Node3D
 			GD.Print($"Camera rotation speed: {CameraRotationSpeed}");
 		}
 
-		// if (Input.GetLastMouseVelocity().Length() > 0)
-		// {
-		// 	cameraRotation.Y += Input.GetLastMouseVelocity().X;
-		// 	cameraRotation.X += Input.GetLastMouseVelocity().Y;
-		// }
-
-		// transform movement according to camera's orientation
+		// Transform movement according to camera's local orientation
 		cameraMovement = cameraMovement.Normalized();
-		cameraMovement *= GlobalTransform.Basis;
-		cameraMovement *= CameraPanSpeed * (float)delta;
-		Position += cameraMovement;
+		Vector3 transformedMovement = GlobalTransform.Basis * cameraMovement;
+		transformedMovement *= CameraPanSpeed * (float)delta;
+		Position += transformedMovement;
 
-		// transform rotation according to camera's orientation// Convert Euler angles to Quaternion
+		// Handle mouse rotation and capture
+		if (Input.IsMouseButtonPressed(MouseButton.Middle))
+		{
+			Input.MouseMode = Input.MouseModeEnum.Captured;
+
+			Vector2 mouseMovement = Input.GetLastMouseVelocity();
+			cameraRotation.Y -= mouseMovement.X * CameraRotationSpeed * (float)delta;
+			cameraRotation.X -= mouseMovement.Y * CameraRotationSpeed * (float)delta;
+		}
+		else
+		{
+			Input.MouseMode = Input.MouseModeEnum.Visible; // Release mouse when middle button is not pressed
+		}
+
+		// Apply rotation based on local orientation
 		RotateCamera(cameraRotation, delta);
 	}
 
@@ -168,20 +180,17 @@ public partial class CelestialCamera : Node3D
 			return;
 		}
 
-		// Convert Euler angles to Quaternion
-		Quaternion currentRotation = new Quaternion(GlobalTransform.Basis);
+		// Create quaternions for pitch (X) and yaw (Y) rotations
+		Quaternion pitch = new Quaternion(Vector3.Right, cameraRotation.X * (float)delta);
+		Quaternion yaw = new Quaternion(Vector3.Up, cameraRotation.Y * (float)delta);
+		Quaternion roll = new Quaternion(Vector3.Forward, cameraRotation.Z * (float)delta);
 
-		// Define the axis of rotation and angle
-		Vector3 axis = cameraRotation.Normalized(); // Assume cameraRotation is a Vector3 representing the axis
-		float angle = CameraRotationSpeed * (float)delta;
+		// Combine the rotations
+		Quaternion combinedRotation = (yaw * pitch * roll).Normalized();
 
-		// Calculate rotation delta as a quaternion using axis-angle representation
-		Quaternion rotationDelta = new Quaternion(axis, angle);
+		var currentRotation = Transform.Basis.GetRotationQuaternion();
 
-		// Apply the rotation
-		currentRotation = rotationDelta * currentRotation;
-
-		// Update the object's rotation
-		Rotation = currentRotation.GetEuler();
+		// Apply the combined rotation to the camera
+		Basis = new Basis(currentRotation * combinedRotation);
 	}
 }

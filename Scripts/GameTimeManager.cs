@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.ComponentModel.DataAnnotations;
 
 public partial class GameTimeManager : Node
 {
@@ -23,6 +24,11 @@ public partial class GameTimeManager : Node
         {
             QueueFree();
         }
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        AdvanceTime(TimeSpan.FromHours(1));
     }
 
     public void AdvanceTime(TimeSpan delta)

@@ -56,6 +56,163 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			SetupSun();
 		}
 
+		public override void _PhysicsProcess(double delta)
+		{
+			// Update the position and rotation of the celestial body
+			//CelestialBodyMesh.Position = CalculatePosition();
+			//CelestialBodyMesh.Transform = UpdateRotation();
+
+			TestShaderVariables();
+		}
+
+		private void TestShaderVariables()
+		{
+			if (_shaderMaterial is null)
+			{
+				return;
+			}
+
+			bool shaderVariableChanged = false;
+			if (Input.IsActionJustReleased("camera_rotate_ccw"))
+			{
+				TimeSpeed += 0.01f;
+				shaderVariableChanged = true;
+			}
+			else if (Input.IsActionJustReleased("camera_pan_left"))
+			{
+				TimeSpeed -= 0.01f;
+				shaderVariableChanged = true;
+			}
+
+			if (Input.IsActionJustReleased("camera_pan_in"))
+			{
+				UVScale += 0.1f;
+				shaderVariableChanged = true;
+			}
+			else if (Input.IsActionJustReleased("camera_pan_out"))
+			{
+				UVScale -= 0.1f;
+				shaderVariableChanged = true;
+			}
+
+			if (Input.IsActionJustReleased("camera_pan_right"))
+			{
+				NoiseStrength -= 0.1f;
+				shaderVariableChanged = true;
+			}
+			else if (Input.IsActionJustReleased("camera_rotate_cw"))
+			{
+				NoiseStrength += 0.1f;
+				shaderVariableChanged = true;
+			}
+
+			if (Input.IsActionJustReleased("camera_pitch_up"))
+			{
+				RedBoost += 0.1f;
+				shaderVariableChanged = true;
+			}
+			else if (Input.IsActionJustReleased("camera_pitch_down"))
+			{
+				RedBoost -= 0.1f;
+				shaderVariableChanged = true;
+			}
+
+			if (Input.IsActionJustReleased("camera_speed_scale_increase"))
+			{
+				CellAmount += 5;
+				shaderVariableChanged = true;
+			}
+			else if (Input.IsActionJustReleased("camera_speed_scale_decrease"))
+			{
+				CellAmount -= 5;
+				shaderVariableChanged = true;
+			}
+
+			if (Input.IsActionJustPressed("camera_pan_speed_increase"))
+			{
+				Period.X += 1;
+				shaderVariableChanged = true;
+			}
+			else if (Input.IsActionJustPressed("camera_pan_speed_decrease"))
+			{
+				Period.X -= 1;
+				shaderVariableChanged = true;
+			}
+
+			if (Input.IsActionJustPressed("camera_rotate_speed_increase"))
+			{
+				Period.Y += 1;
+				shaderVariableChanged = true;
+			}
+			else if (Input.IsActionJustPressed("camera_rotate_speed_decrease"))
+			{
+				Period.Y -= 1;
+				shaderVariableChanged = true;
+			}
+
+			if (shaderVariableChanged)
+			{
+				UpdateShaderParams();
+			}
+		}
+
+		private void UpdateShaderParams()
+		{
+			if (_shaderMaterial is null)
+			{
+				return;
+			}
+
+			_shaderMaterial.SetShaderParameter("time_speed", TimeSpeed);
+			_shaderMaterial.SetShaderParameter("uv_scale", UVScale);
+			_shaderMaterial.SetShaderParameter("red_boost", RedBoost);
+			_shaderMaterial.SetShaderParameter("noise_strength", NoiseStrength);
+			_shaderMaterial.SetShaderParameter("cell_amount", CellAmount);
+			_shaderMaterial.SetShaderParameter("period", Period);
+			GD.Print($"TimeSpeed: {TimeSpeed:F1}\tUVScale: {UVScale:F1}\tRedBoost: {RedBoost:F1}\tNoiseStrength: {NoiseStrength:F1}\tCellAmount: {CellAmount}\tPeriod: {Period}");
+		}
+
+
+		private Transform3D UpdateRotation()
+		{
+			if (Details.SideralRotation <= float.Epsilon)
+			{
+				return CelestialBodyMesh.Transform; // Skip bodies with no rotation
+			}
+
+			DateTimeOffset currentTime = GameTimeManager.Instance.CurrentTime;
+
+			// Calculate the elapsed time in seconds since some reference point (e.g., game start)
+			double elapsedSeconds = (currentTime - Details.CachedPeriapsisEpoch).TotalSeconds;
+
+			// Calculate rotation angle in radians based on the sidereal rotation period (converted to seconds)
+			float rotationAngle = Mathf.DegToRad((float)((360.0 / Details.SideralRotation) * (elapsedSeconds / 3600.0)));
+			rotationAngle = Mathf.Wrap(rotationAngle, 0, Mathf.Pi * 2);
+
+			// Apply axial tilt
+			float axialTiltRadians = Mathf.DegToRad((float)(Details.AxialTilt ?? 0f));
+
+			// Create a quaternion for axial tilt and rotation
+			Quaternion tiltQuaternion = new Quaternion(Vector3.Right, axialTiltRadians);
+			Quaternion rotationQuaternion = new Quaternion(Vector3.Up, rotationAngle);
+
+			// Combine the rotations
+			Quaternion combinedRotation = tiltQuaternion * rotationQuaternion;
+
+			// Apply the combined rotation
+			Transform3D transform = CelestialBodyMesh.Transform;
+			transform.Basis = new Basis(combinedRotation);
+			return transform;
+		}
+
+		private ShaderMaterial? _shaderMaterial;
+		private float TimeSpeed = 0.01f;
+		private float UVScale = 2.3f;
+		private float RedBoost = 1f;
+		private float NoiseStrength = 1.4f;
+		private int CellAmount = 25;
+		private Vector2 Period = new Vector2(10, 15);
+
 		private void SetupSun()
 		{
 			if (!IsTheSun)
@@ -73,14 +230,17 @@ namespace RoemersLegacy.Scripts.CelestialBody
 
 			// Assign the shader material to the mesh
 			CelestialBodyMesh.MaterialOverride = shaderMaterial;
+			_shaderMaterial = CelestialBodyMesh.MaterialOverride as ShaderMaterial;
+			UpdateShaderParams();
 
 			var coronaMesh = new MeshInstance3D();
 			coronaMesh.Mesh = new SphereMesh()
 			{
-				Radius = SphereMesh.Radius * 1.006f, // Slightly larger than the sun
-				Height = SphereMesh.Height * 1.006f,
+				Radius = SphereMesh.Radius * 1.007f, // Slightly larger than the sun
+				Height = SphereMesh.Height * 1.007f,
 			};
-			AddChild(coronaMesh);// Create the shader material for the corona
+			//CelestialBodyMesh.AddChild(coronaMesh);
+			// Create the shader material for the corona
 			var coronaShaderMaterial = new ShaderMaterial();
 			coronaShaderMaterial.Shader = ResourceLoader.Load<Shader>("res://Shaders/Corona.gdshader");
 			coronaMesh.MaterialOverride = coronaShaderMaterial;
@@ -88,125 +248,11 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			coronaMesh.CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
 		}
 
-		private void TryGPUParticles()
-		{
-			var particleEffects = new GpuParticles3D();
-			particleEffects.Amount = 200;
-			particleEffects.Lifetime = 5;
-			particleEffects.Preprocess = 1;
-
-			var curve = new Curve();
-			// Add points to the curve with their respective tangents
-			curve.AddPoint(new Vector2(0.0f, 0.0f), 0.0f, 0.5f);   // Starting point
-			curve.AddPoint(new Vector2(0.2f, 0.8f), 0.5f, 0.5f);   // Rise with gentle slope
-			curve.AddPoint(new Vector2(0.5f, 1.0f), 0.5f, 0.0f);   // Peak with zero slope
-			curve.AddPoint(new Vector2(0.7f, 0.7f), -0.5f, -0.5f); // Fall with gentle slope
-			curve.AddPoint(new Vector2(1.0f, 0.0f), -0.5f, 0.0f);  // Ending point back to base
-
-			// Optionally, you can bake the curve for better performance if sampling frequently
-			curve.BakeResolution = 100; // Define the resolution of baked samples
-			curve.Bake();
-
-			particleEffects.DrawPass1 = new TubeTrailMesh
-			{
-				Radius = 5,
-				RadialSteps = 8,
-				Material = new StandardMaterial3D()
-				{
-					VertexColorUseAsAlbedo = true,
-					UseParticleTrails = true,
-					EmissionEnabled = true,
-					Emission = new Color(1, 0.5f, 0, 0.5f)
-				},
-				SectionLength = 15,
-				Sections = 10,
-				SectionRings = 5,
-				Curve = curve
-			};
-			particleEffects.Emitting = true;
-			particleEffects.TrailEnabled = true;
-			particleEffects.TrailLifetime = 5;
-
-			var particlesMaterial = new ParticleProcessMaterial();
-			var gradientTexture = new GradientTexture2D();
-			var gradient = new Gradient()
-			{
-				Colors = new[]
-				{
-						new Color(1, 1, 1, 1),   // Start with full white
-						new Color(1, 0.5f, 0, 0.5f), // Transition to orange
-						new Color(1, 0, 0, 0)   // Fade to transparent red
-					}
-			};
-			gradientTexture.Gradient = gradient;
-
-			particlesMaterial.ColorRamp = gradientTexture;
-			// particlesMaterial.ScaleMin = 0.9f;
-			// particlesMaterial.ScaleMax = 1.1f;
-			particlesMaterial.EmissionShape = ParticleProcessMaterial.EmissionShapeEnum.SphereSurface;
-			particlesMaterial.EmissionSphereRadius = SphereMesh.Radius;
-			particlesMaterial.Gravity = Vector3.Zero;
-			particlesMaterial.RadialAccelMin = -10f;
-			particlesMaterial.RadialAccelMax = -20f;
-			particlesMaterial.RadialVelocityMin = 20f;
-			particlesMaterial.RadialVelocityMax = 30;
-			particlesMaterial.Spread = 45;
-			// particlesMaterial.ScaleCurve
-			// set Use As Albedo
-
-			//particlesMaterial.color
-
-
-			// // Set Visibility AABB manually
-			// Vector3 aabbExtent = Vector3.One * SphereMesh.Radius * 1.1f; // Adjust based on your specific needs
-			// particleEffects.VisibilityAabb = new Aabb(-aabbExtent, aabbExtent * 2);
-
-			particleEffects.ProcessMaterial = particlesMaterial;
-			CelestialBodyMesh.AddChild(particleEffects);
-		}
-
-		private void TryCPUParticles()
-		{
-			var particleEffects = new CpuParticles3D();
-			particleEffects.Amount = 100;
-			particleEffects.Lifetime = 5;
-			particleEffects.Preprocess = 5;
-			particleEffects.EmissionShape = CpuParticles3D.EmissionShapeEnum.Sphere;
-			particleEffects.EmissionSphereRadius = SphereMesh.Radius;
-			particleEffects.InitialVelocityMin = (float)(SphereMesh.Radius * 0.05);
-			particleEffects.InitialVelocityMax = (float)(SphereMesh.Radius * 0.15);
-			particleEffects.Gravity = Vector3.Zero;
-			particleEffects.RadialAccelMin = 0.1f;
-			particleEffects.RadialAccelMax = 0.5f;
-
-			var particlesMaterial = new ParticleProcessMaterial();
-			var gradientTexture = new GradientTexture2D();
-			var gradient = new Gradient()
-			{
-				Colors = new[]
-				{
-						new Color(1, 1, 1, 1),   // Start with full white
-						new Color(1, 0.5f, 0, 0.5f), // Transition to orange
-						new Color(1, 0, 0, 0)   // Fade to transparent red
-					}
-			};
-			gradientTexture.Gradient = gradient;
-
-			particlesMaterial.ColorRamp = gradientTexture;
-			particlesMaterial.ScaleMin = 5f;
-			particlesMaterial.ScaleMax = 15f;
-			// particlesMaterial.ScaleCurve
-
-			//particleEffects.MaterialOverride = particlesMaterial;
-			particleEffects.Emitting = true;
-			AddChild(particleEffects);
-		}
-
 		private void RecalculateProperties()
 		{
 			Name = Details.Id;
 			CalculateSphereMeshProperties();
-			CalculatePosition();
+			CelestialBodyMesh.Position = CalculatePosition();
 			OrbitPath.RegeneratePath(Details);
 			ApplyTextures();
 		}
@@ -267,20 +313,22 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			CelestialBodyMesh.MaterialOverride = material;
 		}
 
-		private void CalculatePosition()
+		private Vector3 CalculatePosition(DateTimeOffset? timestamp = null)
 		{
 			if (Details.SemimajorAxis <= 1)
 			{
-				return;
+				return Vector3.Zero; // Skip bodies with insignificant orbits
 			}
 
-			DateTimeOffset currentTime = GameTimeManager.Instance.CurrentTime;
+			// Use provided timestamp or current game time
+			DateTimeOffset currentTime = timestamp ?? GameTimeManager.Instance.CurrentTime;
 
 			// Time since periapsis
 			TimeSpan timeSincePeriapsis = currentTime - Details.CachedPeriapsisEpoch;
 
-			// Mean anomaly
+			// Mean anomaly, ensuring it's within the range 0 to 2π
 			double meanAnomaly = Details.MainAnomaly + Details.CachedMeanMotion * timeSincePeriapsis.TotalDays;
+			meanAnomaly = meanAnomaly % (2 * Math.PI); // Normalize to [0, 2π]
 
 			// Solve Kepler's equation to find eccentric anomaly
 			double eccentricAnomaly = SolveKeplerEquation(meanAnomaly, Details.Eccentricity);
@@ -304,14 +352,18 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			// Rotate to 3D space
 			double i = Mathf.DegToRad((float)Details.Inclination);
 			double omega = Mathf.DegToRad((float)Details.ArgumentOfPeriapsis);
-			double Omega = Mathf.DegToRad((float)Details.doubleitudeOfAscendingNode);
+			double Omega = Mathf.DegToRad((float)Details.DoubleitudeOfAscendingNode);
 
 			position = RotatePoint(position, Vector3.Up, omega);
 			position = RotatePoint(position, Vector3.Left, i);
 			position = RotatePoint(position, Vector3.Up, Omega);
 
-			// Set the position of the celestial body mesh
-			CelestialBodyMesh.Position = position;
+			// if (Details.Id == "jupiter")
+			// {
+			// 	GD.Print($"currentTime: {currentTime}\ttimeSincePeriapsis: {timeSincePeriapsis.TotalDays:F2}\tmeanAnomaly: {meanAnomaly:F2}\teccentricAnomaly: {eccentricAnomaly:F2}\ttrueAnomaly: {trueAnomaly:F2}\tr: {r:F2}\tscaledDistance: {scaledDistance:F2}\tposition: {position}");
+			// }
+
+			return position;
 		}
 
 		// Helper method to solve Kepler's equation using Newton's method
