@@ -231,7 +231,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			// Assign the shader material to the mesh
 			CelestialBodyMesh.MaterialOverride = shaderMaterial;
 			_shaderMaterial = CelestialBodyMesh.MaterialOverride as ShaderMaterial;
-			UpdateShaderParams();
+			//UpdateShaderParams();
 
 			var coronaMesh = new MeshInstance3D();
 			coronaMesh.Mesh = new SphereMesh()
