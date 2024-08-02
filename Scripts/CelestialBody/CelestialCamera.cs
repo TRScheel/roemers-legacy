@@ -56,7 +56,7 @@ public partial class CelestialCamera : Node3D
 	{
 		// retrieve inputs for camera_pan_up/down/left/right, camera_pitch_up/down, 
 		// camera_zoom_in/out, camera_roll_cw/ccw, and camera_yaw_left/right
-		//UpdateCameraPosition(delta);
+		UpdateCameraPosition(delta);
 	}
 
 	private void UpdateCameraPosition(double delta)

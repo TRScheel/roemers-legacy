@@ -62,7 +62,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			//CelestialBodyMesh.Position = CalculatePosition();
 			//CelestialBodyMesh.Transform = UpdateRotation();
 
-			TestShaderVariables();
+			//TestShaderVariables();
 		}
 
 		private void TestShaderVariables()
