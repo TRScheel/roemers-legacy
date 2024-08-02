@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3 uid="uid://bbxgjbklw3og5"]
+
+[ext_resource type="Script" path="res://Scripts/CelestialBody/CelestialBody.cs" id="1_hs1hh"]
+[ext_resource type="PackedScene" uid="uid://bykwmr7nc5vhm" path="res://Scenes/OrbitPath.tscn" id="2_7lc7r"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_i7qs5"]
+
+[node name="CelestialBodyNode" type="Node3D"]
+script = ExtResource("1_hs1hh")
+
+[node name="CelestialBodyMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_i7qs5")
+
+[node name="OrbitPath" parent="." instance=ExtResource("2_7lc7r")]
