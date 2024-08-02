@@ -1,274 +1,214 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Godot;
 
 namespace RoemersLegacy.Scripts.CelestialBody
 {
-    public record class CelestialBodyDetails
-    {
-        public static CelestialBodyDetails Empty => new() { Id = "Unknown", Name = "Unknown" };
+	public class CelestialBodyDetails : CelestialBodyDetailsData
+	{
+		// Cached values for orbital calculations
+		private double _cachedMeanMotion;
+		private DateTimeOffset _cachedPeriapsisEpoch;
 
-        /// <summary>
-        /// Id of the body in the API.
-        /// </summary>
-        [JsonPropertyName("id")]
-        public string? Id { get; set; }
+		private bool _cacheValid = false;
 
-        /// <summary>
-        /// Body name (in French).
-        /// </summary>
-        [JsonPropertyName("name")]
-        public string? Name { get; set; }
+		// Constructor to copy properties from an existing CelestialBodyDetails instance
+		public CelestialBodyDetails(CelestialBodyDetailsData original)
+		{
+			// Copy all relevant properties
+			base.Id = original.Id;
+			base.Name = original.Name;
+			base.EnglishName = original.EnglishName;
+			base.IsPlanet = original.IsPlanet;
+			base.Moons = original.Moons != null ? new List<MoonDetails>(original.Moons) : null;
+			base.SemimajorAxis = original.SemimajorAxis;
+			base.Perihelion = original.Perihelion;
+			base.Aphelion = original.Aphelion;
+			base.Eccentricity = original.Eccentricity;
+			base.Inclination = original.Inclination;
+			base.Mass = original.Mass;
+			base.Volume = original.Volume;
+			base.Density = original.Density;
+			base.Gravity = original.Gravity;
+			base.EscapeVelocity = original.EscapeVelocity;
+			base.MeanRadius = original.MeanRadius;
+			base.EquatorialRadius = original.EquatorialRadius;
+			base.PolarRadius = original.PolarRadius;
+			base.Flattening = original.Flattening;
+			base.Dimension = original.Dimension;
+			base.SideralOrbit = original.SideralOrbit;
+			base.SideralRotation = original.SideralRotation;
+			base.AroundPlanet = original.AroundPlanet;
+			base.DiscoveredBy = original.DiscoveredBy;
+			base.DiscoveryDate = original.DiscoveryDate;
+			base.AlternativeName = original.AlternativeName;
+			base.AxialTilt = original.AxialTilt;
+			base.AverageTemperature = original.AverageTemperature;
+			base.MainAnomaly = original.MainAnomaly;
+			base.ArgumentOfPeriapsis = original.ArgumentOfPeriapsis;
+			base.doubleitudeOfAscendingNode = original.doubleitudeOfAscendingNode;
+			base.BodyType = original.BodyType;
+			base.Relation = original.Relation;
 
-        /// <summary>
-        /// English name.
-        /// </summary>
-        [JsonPropertyName("englishName")]
-        public string? EnglishName { get; set; }
+			// Initialize cache based on the current game time
+			RecalculateCache(GameTimeManager.Instance.CurrentTime);
+		}
 
-        /// <summary>
-        /// Indicates if it is a planet.
-        /// </summary>
-        [JsonPropertyName("isPlanet")]
-        public bool IsPlanet { get; set; }
+		// Override the properties to capture changes and invalidate cache
 
-        /// <summary>
-        /// Table with all moons.
-        /// Contains moon name and moon API URL.
-        /// </summary>
-        [JsonPropertyName("moons")]
-        public List<MoonDetails>? Moons { get; set; }
+		public override double SemimajorAxis
+		{
+			get => base.SemimajorAxis;
+			set
+			{
+				if (base.SemimajorAxis != value)
+				{
+					base.SemimajorAxis = value;
+					InvalidateCache();
+				}
+			}
+		}
 
-        /// <summary>
-        /// Semimajor Axis of the body in kilometers.
-        /// </summary>
-        [JsonPropertyName("semimajorAxis")]
-        public double SemimajorAxis { get; set; }
+		public override double Eccentricity
+		{
+			get => base.Eccentricity;
+			set
+			{
+				if (base.Eccentricity != value)
+				{
+					base.Eccentricity = value;
+					InvalidateCache();
+				}
+			}
+		}
 
-        /// <summary>
-        /// Perihelion in kilometers.
-        /// </summary>
-        [JsonPropertyName("perihelion")]
-        public double Perihelion { get; set; }
+		public override double Inclination
+		{
+			get => base.Inclination;
+			set
+			{
+				if (base.Inclination != value)
+				{
+					base.Inclination = value;
+					InvalidateCache();
+				}
+			}
+		}
 
-        /// <summary>
-        /// Aphelion in kilometers.
-        /// </summary>
-        [JsonPropertyName("aphelion")]
-        public double Aphelion { get; set; }
+		public override double ArgumentOfPeriapsis
+		{
+			get => base.ArgumentOfPeriapsis;
+			set
+			{
+				if (base.ArgumentOfPeriapsis != value)
+				{
+					base.ArgumentOfPeriapsis = value;
+					InvalidateCache();
+				}
+			}
+		}
 
-        /// <summary>
-        /// Orbital eccentricity.
-        /// </summary>
-        [JsonPropertyName("eccentricity")]
-        public double Eccentricity { get; set; }
+		public override double doubleitudeOfAscendingNode
+		{
+			get => base.doubleitudeOfAscendingNode;
+			set
+			{
+				if (base.doubleitudeOfAscendingNode != value)
+				{
+					base.doubleitudeOfAscendingNode = value;
+					InvalidateCache();
+				}
+			}
+		}
 
-        /// <summary>
-        /// Orbital inclination in degrees.
-        /// </summary>
-        [JsonPropertyName("inclination")]
-        public double Inclination { get; set; }
+		public override double MainAnomaly
+		{
+			get => base.MainAnomaly;
+			set
+			{
+				if (base.MainAnomaly != value)
+				{
+					base.MainAnomaly = value;
+					InvalidateCache();
+				}
+			}
+		}
 
-        /// <summary>
-        /// Body mass in 10^n kg.
-        /// Contains mass value and mass exponent.
-        /// </summary>
-        [JsonPropertyName("mass")]
-        public MassDetails? Mass { get; set; }
+		public override double SideralOrbit
+		{
+			get => base.SideralOrbit;
+			set
+			{
+				if (base.SideralOrbit != value)
+				{
+					base.SideralOrbit = value;
+					InvalidateCache();
+				}
+			}
+		}
 
-        /// <summary>
-        /// Body volume in 10^n km^3.
-        /// Contains volume value and volume exponent.
-        /// </summary>
-        [JsonPropertyName("vol")]
-        public VolumeDetails? Volume { get; set; }
+		private void InvalidateCache()
+		{
+			_cacheValid = false;
+		}
 
-        /// <summary>
-        /// Body density in g/cm^3.
-        /// </summary>
-        [JsonPropertyName("density")]
-        public double Density { get; set; }
+		// Method to recalculate and cache parameters
+		private void RecalculateCache(DateTimeOffset currentTime)
+		{
+			if (_cacheValid)
+				return;
 
-        /// <summary>
-        /// Surface gravity in m/s^2.
-        /// </summary>
-        [JsonPropertyName("gravity")]
-        public double Gravity { get; set; }
+			// Recompute necessary values
+			_cachedMeanMotion = 2 * Math.PI / SideralOrbit; // Mean motion in radians per day
+			_cachedPeriapsisEpoch = CalculatePeriapsisEpoch(currentTime);
 
-        /// <summary>
-        /// Escape speed in m/s.
-        /// </summary>
-        [JsonPropertyName("escape")]
-        public double EscapeVelocity { get; set; }
+			_cacheValid = true;
+		}
 
-        /// <summary>
-        /// Mean radius in kilometers.
-        /// </summary>
-        [JsonPropertyName("meanRadius")]
-        public double MeanRadius { get; set; }
+		// Calculate the time of periapsis passage based on current time and orbital elements
+		private DateTimeOffset CalculatePeriapsisEpoch(DateTimeOffset currentTime)
+		{
+			// Mean anomaly at epoch (converted from degrees to radians)
+			double M0 = Mathf.DegToRad((float)MainAnomaly);
 
-        /// <summary>
-        /// Equatorial radius in kilometers.
-        /// </summary>
-        [JsonPropertyName("equaRadius")]
-        public double EquatorialRadius { get; set; }
+			// Sidereal orbit period in days
+			double T = SideralOrbit;
 
-        /// <summary>
-        /// Polar radius in kilometers.
-        /// </summary>
-        [JsonPropertyName("polarRadius")]
-        public double PolarRadius { get; set; }
+			// Calculate time since periapsis passage
+			double timeSincePeriapsis = (M0 / (2 * Math.PI)) * T;
 
-        /// <summary>
-        /// Flattening.
-        /// </summary>
-        [JsonPropertyName("flattening")]
-        public double Flattening { get; set; }
+			// Calculate the epoch of periapsis passage
+			DateTimeOffset periapsisEpoch = currentTime - TimeSpan.FromDays(timeSincePeriapsis);
 
-        /// <summary>
-        /// Body dimension on the 3 axes X, Y, and Z for non-spherical bodies.
-        /// </summary>
-        [JsonPropertyName("dimension")]
-        public string? Dimension { get; set; }
+			return periapsisEpoch;
+		}
 
-        /// <summary>
-        /// Sideral orbital time for body around another one (the Sun or a planet) in Earth days.
-        /// </summary>
-        [JsonPropertyName("sideralOrbit")]
-        public double SideralOrbit { get; set; }
+		// Expose the cached values
+		public double CachedMeanMotion
+		{
+			get
+			{
+				EnsureCacheIsValid(GameTimeManager.Instance.CurrentTime);
+				return _cachedMeanMotion;
+			}
+		}
 
-        /// <summary>
-        /// Sideral rotation, necessary time to turn around itself, in hours.
-        /// </summary>
-        [JsonPropertyName("sideralRotation")]
-        public double SideralRotation { get; set; }
+		public DateTimeOffset CachedPeriapsisEpoch
+		{
+			get
+			{
+				EnsureCacheIsValid(GameTimeManager.Instance.CurrentTime);
+				return _cachedPeriapsisEpoch;
+			}
+		}
 
-        /// <summary>
-        /// For a moon, the planet around which it is orbiting.
-        /// Contains planet name and planet API URL.
-        /// </summary>
-        [JsonPropertyName("aroundPlanet")]
-        public AroundPlanetDetails? AroundPlanet { get; set; }
-
-        /// <summary>
-        /// Discovery name.
-        /// </summary>
-        [JsonPropertyName("discoveredBy")]
-        public string? DiscoveredBy { get; set; }
-
-        /// <summary>
-        /// Discovery date.
-        /// </summary>
-        [JsonPropertyName("discoveryDate")]
-        public string? DiscoveryDate { get; set; }
-
-        /// <summary>
-        /// Temporary name.
-        /// </summary>
-        [JsonPropertyName("alternativeName")]
-        public string? AlternativeName { get; set; }
-
-        /// <summary>
-        /// Axial tilt.
-        /// </summary>
-        [JsonPropertyName("axialTilt")]
-        public double? AxialTilt { get; set; }
-
-        /// <summary>
-        /// Mean temperature in Kelvin.
-        /// </summary>
-        [JsonPropertyName("avgTemp")]
-        public double AverageTemperature { get; set; }
-
-        /// <summary>
-        /// Mean anomaly in degrees.
-        /// </summary>
-        [JsonPropertyName("mainAnomaly")]
-        public double MainAnomaly { get; set; }
-
-        /// <summary>
-        /// Argument of perihelion in degrees.
-        /// </summary>
-        [JsonPropertyName("argPeriapsis")]
-        public double ArgumentOfPeriapsis { get; set; }
-
-        /// <summary>
-        /// doubleitude of ascending node in degrees.
-        /// </summary>
-        [JsonPropertyName("doubleAscNode")]
-        public double doubleitudeOfAscendingNode { get; set; }
-
-        /// <summary>
-        /// The body type: Star, Planet, Dwarf Planet, Asteroid, Comet, or Moon.
-        /// </summary>
-        [JsonPropertyName("bodyType")]
-        public string? BodyType { get; set; }
-
-        /// <summary>
-        /// The API URL for this body.
-        /// </summary>
-        [JsonPropertyName("rel")]
-        public string? Relation { get; set; }
-
-        public record MassDetails
-        {
-            /// <summary>
-            /// Body mass.
-            /// </summary>
-            [JsonPropertyName("massValue")]
-            public double MassValue { get; set; }
-
-            /// <summary>
-            /// Exponent of the mass.
-            /// </summary>
-            [JsonPropertyName("massExponent")]
-            public double MassExponent { get; set; }
-        }
-
-        public record VolumeDetails
-        {
-            /// <summary>
-            /// Body volume.
-            /// </summary>
-            [JsonPropertyName("volValue")]
-            public double VolumeValue { get; set; }
-
-            /// <summary>
-            /// Exponent of the volume.
-            /// </summary>
-            [JsonPropertyName("volExponent")]
-            public double VolumeExponent { get; set; }
-        }
-
-        public record AroundPlanetDetails
-        {
-            /// <summary>
-            /// Planet name.
-            /// </summary>
-            [JsonPropertyName("planet")]
-            public string? Planet { get; set; }
-
-            /// <summary>
-            /// Planet API URL.
-            /// </summary>
-            [JsonPropertyName("rel")]
-            public string? Relation { get; set; }
-        }
-
-        public record MoonDetails
-        {
-            /// <summary>
-            /// Moon name.
-            /// </summary>
-            [JsonPropertyName("moon")]
-            public string? Name { get; set; }
-
-            /// <summary>
-            /// Moon API URL.
-            /// </summary>
-            [JsonPropertyName("rel")]
-            public string? Relation { get; set; }
-        }
-    }
-
+		private void EnsureCacheIsValid(DateTimeOffset currentTime)
+		{
+			if (!_cacheValid)
+			{
+				RecalculateCache(currentTime);
+			}
+		}
+	}
 }

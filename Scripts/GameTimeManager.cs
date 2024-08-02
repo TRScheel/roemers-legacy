@@ -38,10 +38,7 @@ public partial class GameTimeManager : Node
         currentTime = time;
     }
 
-    public DateTimeOffset GetCurrentTime()
-    {
-        return currentTime;
-    }
+    public DateTimeOffset CurrentTime => currentTime;
 
     public long GetElapsedTime()
     {

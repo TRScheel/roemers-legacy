@@ -1,0 +1,13 @@
+[gd_scene load_steps=3 format=3 uid="uid://bykwmr7nc5vhm"]
+
+[ext_resource type="Script" path="res://Scripts/CelestialBody/OrbitPath.cs" id="1_oll8b"]
+
+[sub_resource type="Curve3D" id="Curve3D_e15gc"]
+
+[node name="OrbitPath" type="Node3D"]
+script = ExtResource("1_oll8b")
+
+[node name="OrbitPath3d" type="Path3D" parent="."]
+curve = SubResource("Curve3D_e15gc")
+
+[node name="OrbitPathMesh" type="MeshInstance3D" parent="OrbitPath3d"]
