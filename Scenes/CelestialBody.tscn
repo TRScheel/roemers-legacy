@@ -11,4 +11,10 @@ script = ExtResource("1_hs1hh")
 [node name="CelestialBodyMesh" type="MeshInstance3D" parent="."]
 mesh = SubResource("SphereMesh_i7qs5")
 
+[node name="CelestialBodyArea3D" type="Area3D" parent="CelestialBodyMesh"]
+
+[node name="CelestialBodyCollisionShape3D" type="CollisionShape3D" parent="CelestialBodyMesh/CelestialBodyArea3D"]
+
 [node name="OrbitPath" parent="." instance=ExtResource("2_7lc7r")]
+
+[connection signal="input_event" from="CelestialBodyMesh/CelestialBodyArea3D" to="." method="OnInput"]

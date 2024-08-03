@@ -38,6 +38,28 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			}
 		}
 
+		private Area3D? _celestialBodyArea3D;
+		public Area3D CelestialBodyArea3D
+		{
+			get
+			{
+				_celestialBodyArea3D ??= (Area3D)CelestialBodyMesh.GetNode("CelestialBodyArea3D");
+
+				return _celestialBodyArea3D;
+			}
+		}
+
+		private CollisionShape3D? _celestialBodyCollisionShape3D;
+		public CollisionShape3D CelestialBodyCollisionShape3D
+		{
+			get
+			{
+				_celestialBodyCollisionShape3D ??= (CollisionShape3D)CelestialBodyArea3D.GetNode("CelestialBodyCollisionShape3D");
+
+				return _celestialBodyCollisionShape3D;
+			}
+		}
+
 		private OrbitPath? _orbitPath;
 		public OrbitPath OrbitPath
 		{
@@ -56,11 +78,17 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			SetupSun();
 		}
 
+		public void OnInput(Node camera, InputEvent @event, Vector3 position, Vector3 normal, long shape_idx)
+		{
+			// Replace with function body.
+			GD.Print(Details.Id);
+		}
+
 		public override void _PhysicsProcess(double delta)
 		{
 			// Update the position and rotation of the celestial body
-			//CelestialBodyMesh.Position = CalculatePosition();
-			//CelestialBodyMesh.Transform = UpdateRotation();
+			CelestialBodyMesh.Position = CalculatePosition();
+			CelestialBodyMesh.Transform = UpdateRotation();
 
 			//TestShaderVariables();
 		}
@@ -75,12 +103,12 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			bool shaderVariableChanged = false;
 			if (Input.IsActionJustReleased("camera_rotate_ccw"))
 			{
-				TimeSpeed += 0.01f;
+				TimeSpeed += 0.001f;
 				shaderVariableChanged = true;
 			}
 			else if (Input.IsActionJustReleased("camera_pan_left"))
 			{
-				TimeSpeed -= 0.01f;
+				TimeSpeed -= 0.001f;
 				shaderVariableChanged = true;
 			}
 
@@ -169,7 +197,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			_shaderMaterial.SetShaderParameter("noise_strength", NoiseStrength);
 			_shaderMaterial.SetShaderParameter("cell_amount", CellAmount);
 			_shaderMaterial.SetShaderParameter("period", Period);
-			GD.Print($"TimeSpeed: {TimeSpeed:F1}\tUVScale: {UVScale:F1}\tRedBoost: {RedBoost:F1}\tNoiseStrength: {NoiseStrength:F1}\tCellAmount: {CellAmount}\tPeriod: {Period}");
+			GD.Print($"TimeSpeed: {TimeSpeed:F3}\tUVScale: {UVScale:F1}\tRedBoost: {RedBoost:F1}\tNoiseStrength: {NoiseStrength:F1}\tCellAmount: {CellAmount}\tPeriod: {Period}");
 		}
 
 
@@ -206,8 +234,8 @@ namespace RoemersLegacy.Scripts.CelestialBody
 		}
 
 		private ShaderMaterial? _shaderMaterial;
-		private float TimeSpeed = 0.01f;
-		private float UVScale = 2.3f;
+		private float TimeSpeed = 0.002f;
+		private float UVScale = 0.7f;
 		private float RedBoost = 1f;
 		private float NoiseStrength = 1.4f;
 		private int CellAmount = 25;
@@ -231,7 +259,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
 			// Assign the shader material to the mesh
 			CelestialBodyMesh.MaterialOverride = shaderMaterial;
 			_shaderMaterial = CelestialBodyMesh.MaterialOverride as ShaderMaterial;
-			UpdateShaderParams();
+			//UpdateShaderParams();
 
 			var coronaMesh = new MeshInstance3D();
 			coronaMesh.Mesh = new SphereMesh()
@@ -239,7 +267,7 @@ namespace RoemersLegacy.Scripts.CelestialBody
 				Radius = SphereMesh.Radius * 1.007f, // Slightly larger than the sun
 				Height = SphereMesh.Height * 1.007f,
 			};
-			//CelestialBodyMesh.AddChild(coronaMesh);
+			CelestialBodyMesh.AddChild(coronaMesh);
 			// Create the shader material for the corona
 			var coronaShaderMaterial = new ShaderMaterial();
 			coronaShaderMaterial.Shader = ResourceLoader.Load<Shader>("res://Shaders/Corona.gdshader");
@@ -269,6 +297,8 @@ namespace RoemersLegacy.Scripts.CelestialBody
 				RadialSegments = 128,
 				Rings = 128
 			};
+
+			CelestialBodyCollisionShape3D.Shape = new SphereShape3D { Radius = sphere.Radius };
 
 			StandardMaterial3D material = new StandardMaterial3D
 			{
